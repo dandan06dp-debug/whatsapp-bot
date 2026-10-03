@@ -15,8 +15,9 @@ load_dotenv()  # works locally; on Render env vars come from dashboard
 
 app = FastAPI()
 
-ACCESS_TOKEN = os.en…KEN"]
-PHONE_NUMBER_ID = os.environ["WHATSAPP_PHONE_NUMBER_ID"]
+# These must match the Environment Variables you set in Render
+ACCESS_TOKEN = os.environ.get("WHATSAPP_ACCESS_TOKEN")
+PHONE_NUMBER_ID = os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
 VERIFY_TOKEN = os.environ.get("WHATSAPP_VERIFY_TOKEN", "agno_verify_123")
 
 # The chatting agent (Qwen model, with conversation memory)
