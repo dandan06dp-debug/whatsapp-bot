@@ -11,16 +11,15 @@ from dotenv import load_dotenv
 from agno.agent import Agent
 from agno.models.groq import Groq
 
-load_dotenv()  # works locally; on Render env vars come from dashboard
+load_dotenv()
 
 app = FastAPI()
 
-# These must match the Environment Variables you set in Render
 ACCESS_TOKEN = os.environ.get("WHATSAPP_ACCESS_TOKEN")
 PHONE_NUMBER_ID = os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
 VERIFY_TOKEN = os.environ.get("WHATSAPP_VERIFY_TOKEN", "agno_verify_123")
 
-# The chatting agent (Qwen model, with conversation memory)
+# The chatting agent (Qwen model, with conversation history)
 agent = Agent(
     name="whatsapp-bot",
     model=Groq(id="qwen/qwen3.8-27b", max_tokens=1000),
@@ -29,9 +28,8 @@ agent = Agent(
         "Keep replies short and conversational, like real WhatsApp messages.",
         "Maximum 2-3 sentences per reply unless asked for detail.",
     ],
-    add_history_to_messages=True,
-    num_history_responses=10,
     markdown=False,
+    num_history_messages=10, # Remembers the last 10 messages in the current session
 )
 
 
@@ -53,7 +51,8 @@ def send_whatsapp_text(to_waid: str, text: str):
 
 def handle_message(from_waid: str, user_text: str):
     print(f"USER: {user_text}")
-    reply = agent.run(user_text).content
+    # We use the user's phone number as the session_id so the agent remembers them!
+    reply = agent.run(user_text, session_id=from_waid).content
     print(f"BOT: {reply}")
     send_whatsapp_text(from_waid, reply)
 
@@ -95,5 +94,5 @@ async def receive(request: Request, background_tasks: BackgroundTasks):
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 8000))  # Render sets PORT automatically
+    port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
