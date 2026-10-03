@@ -1,6 +1,8 @@
-agno
+agno[os,whatsapp-crypto]
 groq
 python-dotenv
 fastapi
 uvicorn
 requests
+sqlalchemy
+httpx
